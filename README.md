@@ -11,7 +11,7 @@ Creating sockets that can be accessed via your web zombs.io client and can still
 
 ## How to install
 Simply clone the project by downloading the .zip file or through releases (coming soon!) <br>
-Make you have installed [Node.js](https://nodejs.org/en/download/prebuilt-installer). <br>
+Make sure you have installed [Node.js](https://nodejs.org/en/download/prebuilt-installer). <br>
 To install necessary dependencies:
 ```
 npm i 
