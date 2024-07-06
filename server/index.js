@@ -106,9 +106,8 @@ wss.on('connection', ws => {
                 if (data.name == "SetPartyName" && new Blob([data.response.partyName]).size > 49) return;
                 if (data.name == "SendChatMessage" && new Blob([data.response.message]).size <= 249) return;
                 */
-
-                master.postMessage({ name: "DATA_OUTGOING", options: { data: msg } });
             };
+            allSessions[ws.masterId].master.postMessage({ name: "DATA_OUTGOING", options: { data: msg } });
         };
     });
 });

@@ -9,7 +9,7 @@
   },
   "name": "session-saver-remake-part-136717163",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "./server/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },

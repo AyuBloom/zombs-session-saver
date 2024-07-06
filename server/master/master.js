@@ -263,7 +263,7 @@ class Master {
             y2: 24000,
             opcode: 4
         });
-        syncNeeds.push({ name: 'PartyInfo', response: this.world.partyInfo, opcode: 9 });
+        syncNeeds.push({ name: 'PartyInfo', response: this.player.partyInfo, opcode: 9 });
         syncNeeds.push({ name: 'PartyShareKey', response: { partyShareKey: this.player.partyShareKey }, opcode: 9 });
         syncNeeds.push({ name: 'DayCycle', response: this.world.dayCycle, opcode: 9 });
         // syncNeeds.push({ name: 'Leaderboard', response: this.world.leaderboard, opcode: 9 });
