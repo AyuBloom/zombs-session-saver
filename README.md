@@ -7,7 +7,7 @@ Creating sockets that can be accessed via your web zombs.io client and can still
 
 ## Special Features(?)
 - Every socket is independent thread-wise!
-- Fetching available sockets, creating and deleating sockets are done through APIs!
+- Fetching available sockets, creating and deleting sockets are done through APIs!
 
 ## How to install
 Simply clone the project by downloading the .zip file or through releases (coming soon!) <br>
