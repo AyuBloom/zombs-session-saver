@@ -40,6 +40,7 @@ const wss = new WebSocket.Server({ port: configs.port }, () => {
 });
 
 wss.on('connection', ws => {
+    ws.hasSynced = false;
     ws.hasBeenVerified = false;
     ws.isConnectedToMaster = false;
 
@@ -51,15 +52,15 @@ wss.on('connection', ws => {
     console.log("New connection to Session Saver");
     ws.on('message', msg => {
         const opcode = new Uint8Array(msg)[0];
-        console.log(opcode);
         if (!ws.hasBeenVerified || !ws.isConnectedToMaster) {
             if (!ws.hasBeenVerified) {
                 try {
                     if (opcode == 9) {
                         const data = serverCodec.decode(msg);
                         console.log(data);
-                        if (data.name == "VerifyUser" && sha1(configs.password) == data.secretKey) {
+                        if (data.name == "VerifyUser" && sha1(configs.password) == data.response.secretKey) {
                             ws.hasBeenVerified = true;
+                            console.log("Verfied user: ", ws.id);
                         };
                     };
                 } catch (e) {
@@ -72,12 +73,14 @@ wss.on('connection', ws => {
                     if (opcode == 9) {
                         const data = serverCodec.decode(msg);
                         if (data.name == "ConnectSession") {
-                            const id = data.id;
+                            const id = data.response.id;
                             if (allSessions[id] !== undefined) {
                                 ws.masterId = id;
                                 ws.isConnectedToMaster = true;
+                                clearTimeout(ws.connectionTimeout);
+
                                 allSessions[id].listeners.push(ws);
-                                allSessions[id].master.postMessage({ name: "NEW_LISTENER", listenerId: ws.id });
+                                allSessions[id].master.postMessage({ name: "NEW_LISTENER", options: { listenerId: ws.id } });
                             } else throw new Error("Session not found: " + id);
                         };
                     };
@@ -90,22 +93,21 @@ wss.on('connection', ws => {
         };
         if (ws.hasBeenVerified && ws.isConnectedToMaster && [3, 9].indexOf(opcode) > -1) {
             if (opcode == 9) {
-                const { master } = allSessions[ws.masterId];
+                /*
                 const data = serverCodec.decode(msg);
                 if (data.name == "BuyItem" && data.response.tier == 1) {
                     if (data.response.itemName == "PetCARL" || data.response.itemName == "PetMiner") return;
 
-                    /*
                     if (data.response.itemName == "Pickaxe" && master.player.inventory.Pickaxe) return;
                     if (data.response.itemName == "Spear" && master.player.inventory.Spear) return;
                     if (data.response.itemName == "Bow" && master.player.inventory.Bow) return;
                     if (data.response.itemName == "Bomb" && master.player.inventory.Bomb) return;
-                    */
                 };
                 if (data.name == "SetPartyName" && new Blob([data.response.partyName]).size > 49) return;
                 if (data.name == "SendChatMessage" && new Blob([data.response.message]).size <= 249) return;
+                */
 
-                master.postMessage({ name: "DATA_OUTGOING", data: msg });
+                master.postMessage({ name: "DATA_OUTGOING", options: { data: msg } });
             };
         };
     });
@@ -144,6 +146,15 @@ app.get('/create', async (req, res) => {
                 case "MASTER_CREATED":
                     res.send("OK");
                     break;
+                case "SYNC_DATA":
+                    const listener = allSessions[sessionId].listeners.find(socket => socket.id == msg.listenerId);
+                    const syncData = serverCodec.encode(9, {
+                        name: "SyncData",
+                        json: JSON.stringify(msg.syncNeeds)
+                    });
+                    listener.send(syncData);
+                    listener.hasSynced = true;
+                    console.log("Synced data: " + listener.id);
                 case "DATA_INCOMING":
                     // console.log(msg.data);
                     try {
@@ -154,7 +165,7 @@ app.get('/create', async (req, res) => {
                                 allSessions[sessionId].listeners.splice(allSessions[sessionId].listeners.indexOf(listener));
                                 continue;
                             };
-                            listener.send(msg.data);
+                            listener.hasSynced && listener.send(msg.data);
                         };
                     } catch {
                         console.log("brother what", sessionId, allSessions[sessionId]);
@@ -169,7 +180,7 @@ app.get('/create', async (req, res) => {
                         delete allSessions[sessionId];
                         console.log("Session closed: " + sessionId);
                     } catch {
-                        console.log("brother how", msg);
+                        console.log("brother how", sessionId);
                     };
                     break;
             }

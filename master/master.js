@@ -266,9 +266,9 @@ class Master {
         syncNeeds.push({ name: 'PartyInfo', response: this.world.partyInfo, opcode: 9 });
         syncNeeds.push({ name: 'PartyShareKey', response: { partyShareKey: this.player.partyShareKey }, opcode: 9 });
         syncNeeds.push({ name: 'DayCycle', response: this.world.dayCycle, opcode: 9 });
-        syncNeeds.push({ name: 'Leaderboard', response: this.world.leaderboard, opcode: 9 });
+        // syncNeeds.push({ name: 'Leaderboard', response: this.world.leaderboard, opcode: 9 });
         syncNeeds.push({ name: 'SetPartyList', response: Object.values(this.world.parties), opcode: 9 });
-        const localBuildings = Object.values(this.buildings);
+        const localBuildings = Object.values(this.world.buildings);
         return {
             tick: this.world.tick,
             entities: this.world.entities,
@@ -290,11 +290,7 @@ class Master {
     };
     addListener(listenerId) {
         const syncNeeds = this.getSyncNeeds();
-        const syncData = this.codec.encode(9, {
-            name: "SyncData",
-            json: JSON.stringify(syncNeeds)
-        });
-        this.mainThread.postMessage({ name: "SYNC_DATA", syncData, listenerId });
+        this.mainThread.postMessage({ name: "SYNC_DATA", syncNeeds, listenerId });
         /*
         ws.send(syncPacket);
 

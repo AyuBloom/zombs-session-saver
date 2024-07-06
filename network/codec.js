@@ -45,12 +45,64 @@ var e_ParameterType;
 module.exports = class Codec {
     constructor(window, ipAddress) {
         this.absentEntitiesFlags = [];
-        this.rpcMaps = [];
+        this.rpcMaps = [{
+            "name": "SyncData",
+            "parameters": [{
+                "name": "json",
+                "type": 3
+            }],
+            "isArray": false,
+            "index": 0
+        }, {
+            "name": "VerifyUser",
+            "parameters": [{
+                "name": "secretKey",
+                "type": 3,
+            }],
+            "isArray": false,
+            "index": 1
+        }, {
+            "name": "ConnectSession",
+            "parameters": [{
+                "name": "id",
+                "type": 3
+            }],
+            "isArray": false,
+            "index": 2
+        }];
+        this.rpcMapsByName = {
+            "SyncData": {
+                "name": "SyncData",
+                "parameters": [{
+                    "name": "json",
+                    "type": 3
+                }],
+                "isArray": false,
+                "index": 0
+            },
+            "VerifyUser": {
+                "name": "VerifyUser",
+                "parameters": [{
+                    "name": "secretKey",
+                    "type": 3
+                }],
+                "isArray": false,
+                "index": 1
+            },
+            "ConnectSession": {
+                "name": "ConnectSession",
+                "parameters": [{
+                    "name": "id",
+                    "type": 3
+                }],
+                "isArray": false,
+                "index": 2
+            },
+        };
         this.updatedEntityFlags = [];
         this.attributeMaps = {};
         this.entityTypeNames = {};
         this.removedEntities = {};
-        this.rpcMapsByName = {};
         this.sortedUidsByType = {};
         
         this.window = window;
