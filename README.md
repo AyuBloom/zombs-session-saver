@@ -1,6 +1,6 @@
 # zombs-session-saver
 Multi-threaded Session Saver for the game zombs.io with APIs availble. <br>
-**A work in progress!** Currently missing a client script.
+**A work in progress!** A client script for testing is available now! More polished and customized client script is coming down the road.
 
 ## Features
 Creating sockets that can be accessed via your web zombs.io client and can still be kept alive after you have finished your session. That's what Session Saver is all about!
@@ -22,10 +22,11 @@ node .
 ```
 
 ## Customizing your settings
-You can change your preferred settings with `config.json`! Currently supported parameters:
+You can change your preferred settings on the server with `config.json`! Currently supported parameters:
 - `port`: Your default session access port. The API port will be availble at `port + 1`.
 - `connectionTimeout`: Sets how long your client should wait for verification and validation before disconnecting.
 - `password`: Your verification code.
 - `sessionLimit`: Sets how many sockets can be held at once. (currently unused)
 
-
+## Integration
+Since I am also the developer of Sun:Raise, this Session Saver package will be added to the script in the future. Stay tuned!
