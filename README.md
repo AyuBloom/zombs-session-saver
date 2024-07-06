@@ -29,4 +29,4 @@ You can change your preferred settings on the server with `config.json`! Current
 - `sessionLimit`: Sets how many sockets can be held at once. (currently unused)
 
 ## Integration
-Since I am also the developer of Sun:Raise, this Session Saver package will be added to the script in the future. Stay tuned!
+Since I am also the developer of [Sun:Raise](https://greasyfork.org/en/scripts/467381-sun-raise-zombs-io), this Session Saver package will be added to the script in the future. Stay tuned!
