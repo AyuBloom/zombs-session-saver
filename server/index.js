@@ -57,14 +57,13 @@ wss.on('connection', ws => {
                 try {
                     if (opcode == 9) {
                         const data = serverCodec.decode(msg);
-                        console.log(data);
                         if (data.name == "VerifyUser" && sha1(configs.password) == data.response.secretKey) {
                             ws.hasBeenVerified = true;
-                            console.log("Verfied user: ", ws.id);
+                            console.log("Verfied user: " + ws.id + ", key: " + data.response.secretKey);
                         };
                     };
                 } catch (e) {
-                    console.log("Forbidden response from listener: ", e);
+                    console.log("Forbidden response from listener: " + ws.id);
                     ws.close();
                 };
             };
@@ -85,7 +84,7 @@ wss.on('connection', ws => {
                         };
                     };
                 } catch (e) {
-                    console.log("Forbidden response from listener: ", e);
+                    console.log("Forbidden response from listener: " + ws.id);
                     ws.close();
                 };
             };
@@ -135,7 +134,7 @@ app.get('/create', async (req, res) => {
         if (servers[serverId] === undefined) return res.send("Server not found");
 
         const sessionId = genUUID();
-        console.log(sessionId, name, req.query.psk || "", serverId);
+        console.log("New session creation request: " + {name, psk: req.query.psk || "", serverId});
         allSessions[sessionId] = {
             master: new Worker(path.join(__dirname, "./master/master.js")),
             listeners: [],
@@ -175,7 +174,7 @@ app.get('/create', async (req, res) => {
                             listener.hasSynced && listener.send(msg.data);
                         };
                     } catch {
-                        console.log("brother what", sessionId, allSessions[sessionId]);
+                        console.log("Error: " + sessionId);
                     };
                     break;
                 case "MASTER_CLOSED":
@@ -187,7 +186,7 @@ app.get('/create', async (req, res) => {
                         delete allSessions[sessionId];
                         console.log("Session closed: " + sessionId);
                     } catch {
-                        console.log("brother how", sessionId);
+                        console.log("Error: " + sessionId);
                     };
                     break;
             }
