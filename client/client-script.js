@@ -116,7 +116,7 @@ game.network.createSession = async function() {
 };
 
 game.network.establishSessionConnection = function() {
-    this.connectionOptions = Object.values(allSessions)[0];
+    this.connectionOptions = Object.values(allSessions)[0].connectionOptions;
     this.connected = false;
     this.connecting = true;
     this.codec.rpcMaps = [{

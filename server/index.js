@@ -122,7 +122,8 @@ app.get('/sessions', (req, res) => {
     const data = {};
     for (const sessionId in allSessions) {
         if (!allSessions[sessionId]?.connectionOptions) continue;
-        data[sessionId] = allSessions[sessionId].connectionOptions;
+        const { connectionOptions, name } = allSessions[sessionId];
+        data[sessionId] = { connectionOptions, name };
     }
     res.send(data);
 });
@@ -139,11 +140,18 @@ app.get('/create', async (req, res) => {
             master: new Worker(path.join(__dirname, "./master/master.js")),
             listeners: [],
             connectionOptions: servers[serverId],
+            name,
         };
         allSessions[sessionId].master.on("message", async msg => {
             switch (msg.name) {
                 case "MASTER_CREATED":
-                    res.send("OK");
+                    const data = {};
+                    for (const _sessionId in allSessions) {
+                        if (!allSessions[_sessionId]?.connectionOptions) continue;
+                        const { connectionOptions, name } = allSessions[_sessionId];
+                        data[_sessionId] = { connectionOptions, name };
+                    }
+                    res.send({ createdSession: sessionId, data });
                     break;
                 case "SYNC_DATA":
                     const listener = allSessions[sessionId].listeners.find(socket => socket.id == msg.listenerId);
