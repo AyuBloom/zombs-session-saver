@@ -63,7 +63,7 @@ tunnels:
     addr: <YOUR_SESSION_ADDRESS + 1>  # The address above, but plus one (eg. 727 -> 728)
     proto: http
 ```
-Save the file, and now you can forward your traffic by doing:
+- Save the file, and now you can forward your traffic by doing:
 ```
 ngrok start --all
 ```
