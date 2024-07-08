@@ -37,7 +37,9 @@ You can change your preferred settings on the server with `config.json`! Current
 - Select the option, and press Play!
 
 ## Forwarding your local sessions
-**Caution:** current clients made by me **have not yet supported endpoints other than localhost**. You will have to modify the client(s) to get this working.
+**Important:**
+- Current clients made by me **have not yet supported endpoints other than localhost**. You will have to modify the client(s) to get this working.
+- `<YOUR_SESSION_ADDRESS>` is your WebSocket server port, `<YOUR_SESSION_ADDRESS + 1>` is your API endpoint port - it is the WebSocket server port plus one. Please change it accordingly to your settings in the `config.json` file. 
 ### serveo
 - Open Terminal, then type in:
 ```
@@ -57,10 +59,10 @@ ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> -R 80:localhost:<YOUR_SESSION_ADDRESS
 ```yml
 tunnels:
   first:
-    addr: <YOUR_SESSION_ADDRESS>      # Your session address can be found in your config.json file of your session saver server
+    addr: <YOUR_SESSION_ADDRESS>      
     proto: http    
   second:
-    addr: <YOUR_SESSION_ADDRESS + 1>  # The address above, but plus one (eg. 727 -> 728)
+    addr: <YOUR_SESSION_ADDRESS + 1> 
     proto: http
 ```
 - Save the file, and now you can forward your traffic by doing:
