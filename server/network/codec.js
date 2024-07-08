@@ -43,7 +43,7 @@ var e_ParameterType;
 })(e_ParameterType || (e_ParameterType = {}));
 
 module.exports = class Codec {
-    constructor(window, ipAddress) {
+    constructor(ipAddress) {
         this.absentEntitiesFlags = [];
         this.rpcMaps = [{
             "name": "SyncData",
@@ -105,12 +105,11 @@ module.exports = class Codec {
         this.removedEntities = {};
         this.sortedUidsByType = {};
         
-        this.window = window;
         this.ipAddress = ipAddress;
     };
 
     async init() {
-        this.wasm = new WAssembly(this.window, this.ipAddress);
+        this.wasm = new WAssembly(this.ipAddress);
         await this.wasm.init();
     }
 

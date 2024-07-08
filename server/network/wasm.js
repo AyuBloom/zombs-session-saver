@@ -2,30 +2,13 @@
 const fs = require("fs");
 
 module.exports = class WAssembly {
-    constructor(window, ipAddress) {
-        this.window = window;
+    constructor(ipAddress) {
         this.ipAddress = ipAddress;
         this.textEncoder = new TextDecoder('utf8');
     }
 
     #a_a(a) {
         // console.log('A / A - Memory Allocation');
-        /*
-        const decoded = this.#decodeParam(a);
-        let _0x37c280 = this.ipAddress; // this.window.eval(decoded);
-
-        if (!_0x37c280) return 0;
-        _0x37c280 += '';
-
-        const _0x5c3737 = this.#_0x31ce17(_0x37c280);
-
-        return (!this.#a_e.bufferSize || this.#a_e.bufferSize < _0x5c3737 + 0x1)
-        && (this.#a_e.bufferSize && this._free(this.#a_e.buffer),
-            this.#a_e.bufferSize = _0x5c3737 + 0x1,
-            this.#a_e.buffer = this._malloc(this.#a_e.bufferSize)),
-            this.#_0x309f86(_0x37c280, this.#a_e.buffer, this.#a_e.bufferSize),
-            this.#a_e.buffer;
-            */
         var t = this.ipAddress;
         if (null == t) return 0;
         t = String(t);
@@ -44,7 +27,8 @@ module.exports = class WAssembly {
         if (decoded.includes('document.getElementById("hud").children.length')) return 24;
         if (decoded.includes("hostname")) return this.ipAddress;
 
-        return 0x0 | this.window.eval(decoded);
+        console.log("left to eval: " + decoded);
+        return 0x0 | eval(decoded);
     }
 
     #a_c() {

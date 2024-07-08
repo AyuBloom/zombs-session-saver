@@ -1,6 +1,5 @@
 const WebSocket = require("ws");
 const { parentPort: thread } = require("worker_threads");
-const { JSDOM } = require("jsdom");
 
 const BinCodec = require("../network/codec.js");
 const servers = require("../utils/server.js");
@@ -48,9 +47,8 @@ class Master {
     }
     async init() {
         const { ipAddress, hostname } = this.connectionOptions;
-        const { window } = new JSDOM("https://zombs.io/");
 
-        this.codec = new BinCodec(window, ipAddress);
+        this.codec = new BinCodec(ipAddress);
         await this.codec.init();
 
         this.socket = new WebSocket(`wss://${hostname}:443`, {

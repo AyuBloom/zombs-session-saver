@@ -111,7 +111,7 @@ const shouldUseSession = true;
 
 game.network.createSession = async function() {
     const nickname = game.ui.getOption("nickname");
-    const server = document.getElementsByClassName("hud-intro-name")[0].value;
+    const server = document.getElementsByClassName("hud-intro-server")[0].value;
     await fetch(`http://localhost:${SESSION_DEFAULT_PORT + 1}/create?name=${nickname}&serverId=${server}`);
 };
 

@@ -4,10 +4,6 @@ const sha1 = require("./utils/sha1.js");
 const genUUID = require("./utils/genUUID.js");
 const servers = require("./utils/server.js");
 
-/*
-const { StaticPool } = require('node-worker-threads-pool');
-*/
-
 const Codec = require("./network/codec.js");
 const serverCodec = new Codec();
 
@@ -17,23 +13,6 @@ const sessionLimit = configs.sessionLimit;
 const WebSocket = require("ws");
 const path = require("path");
 const { Worker } = require("node:worker_threads");
-
-/*
-const staticPool = new StaticPool({
-    size: sessionLimit,
-    task: async (obj) => {
-        const WAssembly = require("./network/wasm.js");
-        const { JSDOM } = require("jsdom");
-        const { window } = new JSDOM("https://zombs.io/");
-
-        const wasm = new WAssembly(window, obj.ipAddress);
-        await wasm.init();
-
-        console.log(wasm, obj);
-        return wasm;
-    },
-});
-*/
 
 const wss = new WebSocket.Server({ port: configs.port }, () => {
     console.log('Session Saver server initiated at port ' + configs.port);
@@ -134,7 +113,7 @@ app.get('/create', async (req, res) => {
         if (servers[serverId] === undefined) return res.send("Server not found");
 
         const sessionId = genUUID();
-        console.log("New session creation request: " + {name, psk: req.query.psk || "", serverId});
+        console.log("New session creation request: " + JSON.stringify({name, psk: req.query.psk || "", serverId}));
         allSessions[sessionId] = {
             master: new Worker(path.join(__dirname, "./master/master.js")),
             listeners: [],
