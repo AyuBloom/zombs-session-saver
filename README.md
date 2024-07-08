@@ -37,10 +37,22 @@ You can change your preferred settings on the server with `config.json`! Current
 - Select the option, and press Play!
 
 ## Forwarding your local sessions
-**Caution:** current clients **have not yet supported endpoints other than localhost**. You will have to modify the client to get this working.
+**Caution:** current clients made by me **have not yet supported endpoints other than localhost**. You will have to modify the client(s) to get this working.
+### serveo
+- Open Terminal, then type in:
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> serveo.net
+```
+- Open another terminal tab, then type in:
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS + 1> serveo.net
+```
+You can make multiple tunnels at once with just one command, but it'll give you two urls that you will have to verify yourself which one is which.
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> -R 80:localhost:<YOUR_SESSION_ADDRESS + 1> serveo.net
+```
 ### ngrok
-Since forwarding TCP connections **now requires a credit/debit card**, this option might not be viable for some, but **it is still free**.
-- First, set up ngrok ([guide here](https://dashboard.ngrok.com/get-started/setup/)), then set up your billing methods ([in your dashboard](https://dashboard.ngrok.com/billing)).
+- First, set up ngrok ([guide here](https://dashboard.ngrok.com/get-started/setup/)).
 - Find your ngrok.yml file for ngrok ([guide here](https://ngrok.com/docs/agent/config/)), open it in a text editor, then add this to your ngrok configuration file:
 ```yml
 tunnels:
