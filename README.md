@@ -36,3 +36,23 @@ You can change your preferred settings on the server with `config.json`! Current
 - Wait a little bit for the session to be created, then you would be able to see a new option to choose. [Example image](https://github.com/AyuBloom/zombs-session-saver/assets/85625843/7d1613ae-b05b-4086-9144-5f2bac7b5a52)
 - Select the option, and press Play!
 
+## Forwarding your local sessions
+**Caution:** current clients **have not yet supported endpoints other than localhost**. You will have to modify the client to get this working.
+### ngrok
+Since forwarding TCP connections **now requires a credit/debit card**, this option might not be viable for some, but **it is still free**.
+- First, set up ngrok ([guide here](https://dashboard.ngrok.com/get-started/setup/)), then set up your billing methods ([in your dashboard](https://dashboard.ngrok.com/billing)).
+- Find your ngrok.yml file for ngrok ([guide here](https://ngrok.com/docs/agent/config/)), open it in a text editor, then add this to your ngrok configuration file:
+```yml
+tunnels:
+  first:
+    addr: <YOUR_SESSION_ADDRESS>      # Your session address can be found in your config.json file of your session saver server
+    proto: http    
+  second:
+    addr: <YOUR_SESSION_ADDRESS + 1>  # The address above, but plus one (eg. 727 -> 728)
+    proto: http
+```
+Save the file, and now you can forward your traffic by doing:
+```
+ngrok start --all
+```
+
