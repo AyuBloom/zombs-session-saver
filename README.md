@@ -36,3 +36,37 @@ You can change your preferred settings on the server with `config.json`! Current
 - Wait a little bit for the session to be created, then you would be able to see a new option to choose. [Example image](https://github.com/AyuBloom/zombs-session-saver/assets/85625843/7d1613ae-b05b-4086-9144-5f2bac7b5a52)
 - Select the option, and press Play!
 
+## Forwarding your local sessions
+**Important:**
+- Current clients made by me **have not yet supported endpoints other than localhost**. You will have to modify the client(s) to get this working.
+- `<YOUR_SESSION_ADDRESS>` is your WebSocket server port, `<YOUR_SESSION_ADDRESS + 1>` is your API endpoint port - it is the WebSocket server port plus one. Please change it accordingly to your settings in the `config.json` file. 
+### serveo
+- Open Terminal, then type in:
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> serveo.net
+```
+- Open another terminal tab, then type in:
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS + 1> serveo.net
+```
+You can make multiple tunnels at once with just one command, but it'll give you two urls that you will have to verify yourself which one is which.
+```
+ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> -R 80:localhost:<YOUR_SESSION_ADDRESS + 1> serveo.net
+```
+### ngrok
+- First, set up ngrok ([guide here](https://dashboard.ngrok.com/get-started/setup/)).
+- Find your ngrok.yml file for ngrok ([guide here](https://ngrok.com/docs/agent/config/)), open it in a text editor, then add this to your ngrok configuration file:
+```yml
+tunnels:
+  first:
+    addr: <YOUR_SESSION_ADDRESS>      
+    proto: http    
+  second:
+    addr: <YOUR_SESSION_ADDRESS + 1> 
+    proto: http
+```
+- Save the file, and now you can forward your traffic by doing:
+```
+ngrok start --all
+```
+
