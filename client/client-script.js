@@ -228,18 +228,6 @@ game.network.establishSessionConnection = function() {
                 });
             };
 
-            /*
-        if (data.isPaused) {
-            game.ui.onLocalItemUpdate({
-                itemName: 'Pause',
-                tier: 1,
-                stacks: 1
-            });
-
-            game.ui.emit('wavePaused');
-        };
-        */
-
             for (let i in data.inventory) {
                 this.emitter.emit(PacketIds_1.default[9], {
                     name: "SetItem",
@@ -263,6 +251,23 @@ game.network.establishSessionConnection = function() {
                 entities: data.entities,
                 byteSize: data.byteSize,
                 opcode: 0
+            });
+
+            this.emitter.once(PacketIds_1.default[0], () => {
+                const myPlayer = data.entities[data.syncNeeds[0].uid];
+                myPlayer?.dead && this.emitter.emit(PacketIds_1.default[9], {
+                    name: "Dead",
+                    response: {stashDied: 0},
+                    opcode: 9
+                });
+                myPlayer?.isPaused && (
+                    game.ui.onLocalItemUpdate({
+                        itemName: 'Pause',
+                        tier: 1,
+                        stacks: 1
+                    }),
+                    game.ui.emit('wavePaused')
+                );
             });
         } catch(e) { console.log(e); };
     });

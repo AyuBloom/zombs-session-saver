@@ -33,7 +33,7 @@ const metrics = {
 };
 
 class Master {
-    constructor(id, name, psk, serverId, mainThread) {
+    constructor(id, name, psk, serverId, reconnect, mainThread) {
         this.sessionId = id;
         this.connectionOptions = servers[serverId];
 
@@ -42,7 +42,9 @@ class Master {
         this.world = new World();
         this.player = new Player(name, psk);
 
+        this.shouldReconnect = reconnect;
         this.isReady = false;
+
         this.init();
     }
     async init() {
@@ -51,23 +53,27 @@ class Master {
         this.codec = new BinCodec(ipAddress);
         await this.codec.init();
 
-        this.socket = new WebSocket(`wss://${hostname}:443`, {
-            headers: {
-                'Accept-Encoding': 'gzip, deflate',
-                'Accept-Language': 'en-US,en;q=0.9',
-                'Cache-Control': 'no-cache',
-                'Connection': 'Upgrade',
-                'Host': hostname,
-                'Origin': 'https://zombs.io',
-                'Pragma': 'no-cache',
-                'Sec-WebSocket-Version': '13',
-                'Upgrade': 'websocket',
-                'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
-            },
-        });
-        this.socket.binaryType = "arraybuffer";
-        this.socket.onmessage = this.onMessage.bind(this);
-        this.socket.onclose = this.onClose.bind(this);
+        try {
+            this.socket = new WebSocket(`wss://${hostname}:443`, {
+                headers: {
+                    'Accept-Encoding': 'gzip, deflate',
+                    'Accept-Language': 'en-US,en;q=0.9',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'Upgrade',
+                    'Host': hostname,
+                    'Origin': 'https://zombs.io',
+                    'Pragma': 'no-cache',
+                    'Sec-WebSocket-Version': '13',
+                    'Upgrade': 'websocket',
+                    'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36'
+                },
+            });
+            this.socket.binaryType = "arraybuffer";
+            this.socket.onmessage = this.onMessage.bind(this);
+            this.socket.onclose = this.onClose.bind(this);
+        } catch {
+            this.mainThread.postMessage({ name: "ERROR" });
+        }
     };
     onMessage({ data }) {
         this.sendPingIfNecessary();
@@ -77,8 +83,9 @@ class Master {
                 this.onEntityUpdate(this.data, data);
                 break;
             case 4:
-                if (this.data.allowed == 0) return;
+                if (this.data.allowed == 0) return this.mainThread.postMessage({ name: "ERROR" });
                 this.isReady = true;
+                this.mainThread.postMessage({ name: "MASTER_CREATED" });
 
                 this.world.players = this.data.players;
                 this.player.uid = this.data.uid;
@@ -115,7 +122,7 @@ class Master {
     onClose() {
         if (this.socket.readyState !== 1) {
             this.isReady = false;
-            this.mainThread.postMessage({ name: "MASTER_CLOSED" });
+            this.mainThread.postMessage({ name: this.shouldReconnect ? "MASTER_RECONNECT" : "MASTER_CLOSED" });
         };
         /*
         for (const listener of this.listeners) {
@@ -190,7 +197,7 @@ class Master {
         this.broadcastData(buffer);
     };
     broadcastData(data) {
-        this.mainThread.postMessage({ name: "DATA_INCOMING", data });
+        this.isReady && this.mainThread.postMessage({ name: "DATA_INCOMING", data });
         /*
         for (const listener of this.listeners) {
             if (listener.readyState !== 1) {
@@ -331,10 +338,9 @@ let master = null;
 thread.on("message", async ({ name, options }) => {
     switch (name) {
         case "CREATE_SESSION":
-            const [id, name, psk, serverId] = options;
-            master = new Master(id, name, psk, serverId, thread);
+            const [id, name, psk, serverId, reconnect] = options;
+            master = new Master(id, name, psk, serverId, reconnect, thread);
             await master.init();
-            thread.postMessage({ name: "MASTER_CREATED" });
             break;
         case "NEW_LISTENER":
             master.addListener(options.listenerId);

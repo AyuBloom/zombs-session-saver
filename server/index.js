@@ -19,6 +19,10 @@ const wss = new WebSocket.Server({ port: configs.port }, () => {
 });
 
 wss.on('connection', ws => {
+    if (Object.keys(allSessions).length > sessionLimit) {
+        ws.close();
+        console.log("New connection to Session Saver, but reached the limit of sessions. Please reassign the limit to add more.");
+    };
     ws.hasSynced = false;
     ws.hasBeenVerified = false;
     ws.isConnectedToMaster = false;
@@ -113,23 +117,31 @@ app.get('/create', async (req, res) => {
         if (servers[serverId] === undefined) return res.send("Server not found");
 
         const sessionId = genUUID();
-        console.log("New session creation request: " + JSON.stringify({name, psk: req.query.psk || "", serverId}));
+        console.log("New session creation request: " + JSON.stringify({ name, psk: req.query.psk || "", serverId }));
         allSessions[sessionId] = {
             master: new Worker(path.join(__dirname, "./master/master.js")),
             listeners: [],
             connectionOptions: servers[serverId],
+            hasReconnected: false,
             name,
         };
         allSessions[sessionId].master.on("message", async msg => {
             switch (msg.name) {
                 case "MASTER_CREATED":
-                    const data = {};
-                    for (const _sessionId in allSessions) {
-                        if (!allSessions[_sessionId]?.connectionOptions) continue;
-                        const { connectionOptions, name } = allSessions[_sessionId];
-                        data[_sessionId] = { connectionOptions, name };
+                    if (!allSessions[sessionId].hasReconnected) {
+                        const data = {};
+                        for (const _sessionId in allSessions) {
+                            if (!allSessions[_sessionId]?.connectionOptions) continue;
+                            const { connectionOptions, name } = allSessions[_sessionId];
+                            data[_sessionId] = { connectionOptions, name };
+                        }
+                        res.send({ createdSession: sessionId, data });
+                    } else {
+                        console.log("Reconnection complete: " + sessionId);
+                        for (const { id } of allSessions[sessionId].listeners) {
+                            allSessions[sessionId].master.postMessage({ name: "NEW_LISTENER", options: { listenerId: id } });
+                        };
                     }
-                    res.send({ createdSession: sessionId, data });
                     break;
                 case "SYNC_DATA":
                     const listener = allSessions[sessionId].listeners.find(socket => socket.id == msg.listenerId);
@@ -157,6 +169,7 @@ app.get('/create', async (req, res) => {
                     };
                     break;
                 case "MASTER_CLOSED":
+                case "ERROR":
                     try {
                         for (const listener of allSessions[sessionId].listeners) {
                             listener.readyState === 1 && listener.close();
@@ -168,11 +181,22 @@ app.get('/create', async (req, res) => {
                         console.log("Error: " + sessionId);
                     };
                     break;
+                case "MASTER_RECONNECT":
+                    console.log("Session closed: " + sessionId + ", reconnecting...");
+
+                    allSessions[sessionId].hasReconnected = true;
+                    allSessions[sessionId].master.terminate();
+                    allSessions[sessionId].master = new Worker(path.join(__dirname, "./master/master.js"))
+                    allSessions[sessionId].master.postMessage({
+                        name: "CREATE_SESSION",
+                        options: [sessionId, name, req.query.psk || "", serverId, configs.reconnect]
+                    });
+                    break;
             }
         });
         allSessions[sessionId].master.postMessage({
             name: "CREATE_SESSION",
-            options: [sessionId, name, req.query.psk || "", serverId]
+            options: [sessionId, name, req.query.psk || "", serverId, configs.reconnect]
         });
     } else res.send("Incorrect query");
 });
