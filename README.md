@@ -41,6 +41,7 @@ You can change your preferred settings on the server with `config.json`! Current
 - Current clients made by me **have not yet supported endpoints other than localhost**. You will have to modify the client(s) to get this working.
 - `<YOUR_SESSION_ADDRESS>` is your WebSocket server port, `<YOUR_SESSION_ADDRESS + 1>` is your API endpoint port - it is the WebSocket server port plus one. Please change it accordingly to your settings in the `config.json` file. 
 ### serveo
+**Note:** serveo.net regularly goes down, if anything, it is not reliable for tunnels as a service.
 - Open Terminal, then type in:
 ```
 ssh -R 80:localhost:<YOUR_SESSION_ADDRESS> serveo.net
@@ -69,4 +70,4 @@ tunnels:
 ```
 ngrok start --all
 ```
-
+Before you could access the tunnel, please **verify** the addresses by going on your browser and typing the address in, afterwards you'll see the ngrok warning page and click on the highlighted button.
