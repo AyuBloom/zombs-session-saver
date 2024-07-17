@@ -10,6 +10,7 @@ Creating sockets that can be accessed via your web zombs.io client and can still
 ## Special Features(?)
 - Every socket is independent thread-wise!
 - Fetching available sockets, creating and deleting sockets are done through APIs!
+- Somewhat customizable settings...
 
 ## How to install
 Simply clone the project by downloading the .zip file or through releases (coming soon!) <br>
@@ -28,7 +29,8 @@ You can change your preferred settings on the server with `config.json`! Current
 - `port`: Your default session access port. The API port will be availble at `port + 1`.
 - `connectionTimeout`: Sets how long your client should wait for verification and validation before disconnecting.
 - `password`: Your verification code.
-- `sessionLimit`: Sets how many sockets can be held at once. (currently unused)
+- `sessionLimit`: Sets how many sockets can be held at once.
+- `debugLevel`: Sets what logs should be shown when the server is running. [`ALL`, `NO_DEBUG`, `IMPORTANT_ONLY`, `ERROR_ONLY`] 
 
 ## Integration
 **Implementation for Sun:Raise**:
