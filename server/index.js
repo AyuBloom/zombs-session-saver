@@ -3,6 +3,7 @@ const configs = require("./config.json");
 const sha1 = require("./utils/sha1.js");
 const genUUID = require("./utils/genUUID.js");
 const servers = require("./utils/server.js");
+const logger = require("./utils/logger.js");
 
 const Codec = require("./network/codec.js");
 const serverCodec = new Codec();
@@ -15,7 +16,7 @@ const path = require("path");
 const { Worker } = require("node:worker_threads");
 
 const wss = new WebSocket.Server({ port: configs.port }, () => {
-    console.log('Session Saver server initiated at port ' + configs.port);
+    logger("info", 'Session Saver server initiated at port ' + configs.port);
 });
 
 wss.on('connection', ws => {
@@ -32,7 +33,7 @@ wss.on('connection', ws => {
 
     ws.connectionTimeout = setTimeout(() => { ws.close(); }, configs.connectionTimeout);
 
-    console.log("New connection to Session Saver");
+    logger("info", "New connection to Session Saver: " + ws.id);
     ws.on('message', msg => {
         const opcode = new Uint8Array(msg)[0];
         if (!ws.hasBeenVerified || !ws.isConnectedToMaster) {
@@ -42,11 +43,11 @@ wss.on('connection', ws => {
                         const data = serverCodec.decode(msg);
                         if (data.name == "VerifyUser" && sha1(configs.password) == data.response.secretKey) {
                             ws.hasBeenVerified = true;
-                            console.log("Verfied user: " + ws.id + ", key: " + data.response.secretKey);
+                            logger("debug", "Verfied user: " + ws.id);
                         };
                     };
                 } catch (e) {
-                    console.log("Forbidden response from listener: " + ws.id);
+                    logger("debug", "Forbidden response from listener: " + ws.id);
                     ws.close();
                 };
             };
@@ -67,7 +68,7 @@ wss.on('connection', ws => {
                         };
                     };
                 } catch (e) {
-                    console.log("Forbidden response from listener: " + ws.id);
+                    logger("debug", "Forbidden response from listener: " + ws.id);
                     ws.close();
                 };
             };
@@ -117,7 +118,7 @@ app.get('/create', async (req, res) => {
         if (servers[serverId] === undefined) return res.send("Server not found");
 
         const sessionId = genUUID();
-        console.log("New session creation request: " + JSON.stringify({ name, psk: req.query.psk || "", serverId }));
+        logger("info", "New session creation request: " + JSON.stringify({ name, psk: req.query.psk || "", serverId }));
         allSessions[sessionId] = {
             master: new Worker(path.join(__dirname, "./master/master.js")),
             listeners: [],
@@ -137,7 +138,7 @@ app.get('/create', async (req, res) => {
                         }
                         res.send({ createdSession: sessionId, data });
                     } else {
-                        console.log("Reconnection complete: " + sessionId);
+                        logger("debug", "Reconnection complete: " + sessionId);
                         for (const { id } of allSessions[sessionId].listeners) {
                             allSessions[sessionId].master.postMessage({ name: "NEW_LISTENER", options: { listenerId: id } });
                         };
@@ -151,7 +152,7 @@ app.get('/create', async (req, res) => {
                     });
                     listener.send(syncData);
                     listener.hasSynced = true;
-                    console.log("Synced data: " + listener.id);
+                    logger("debug", "Synced data: " + listener.id);
                 case "DATA_INCOMING":
                     // console.log(msg.data);
                     try {
@@ -165,7 +166,7 @@ app.get('/create', async (req, res) => {
                             listener.hasSynced && listener.send(msg.data);
                         };
                     } catch {
-                        console.log("Error: " + sessionId);
+                        logger("error", "Error: " + sessionId);
                     };
                     break;
                 case "MASTER_CLOSED":
@@ -176,13 +177,13 @@ app.get('/create', async (req, res) => {
                         };
                         allSessions[sessionId].master.terminate();
                         delete allSessions[sessionId];
-                        console.log("Session closed: " + sessionId);
+                        logger("warn", "Session closed: " + sessionId);
                     } catch {
-                        console.log("Error: " + sessionId);
+                        logger("error", "Error: " + sessionId);
                     };
                     break;
                 case "MASTER_RECONNECT":
-                    console.log("Session closed: " + sessionId + ", reconnecting...");
+                    logger("warn", "Session closed: " + sessionId + ", reconnecting...");
 
                     allSessions[sessionId].hasReconnected = true;
                     allSessions[sessionId].master.terminate();
@@ -192,7 +193,7 @@ app.get('/create', async (req, res) => {
                         options: [sessionId, name, req.query.psk || "", serverId, configs.reconnect]
                     });
                     break;
-            }
+            };
         });
         allSessions[sessionId].master.postMessage({
             name: "CREATE_SESSION",
@@ -204,9 +205,10 @@ app.get('/create', async (req, res) => {
 app.get("/delete", (req, res) => {
     const { sessionId } = req.query;
     if (allSessions[sessionId] !== undefined) {
+        logger("info", "New kill session request: " + sessionId);
         allSessions[sessionId].master.postMessage({ name: "CLOSE_SESSION" });
         res.send("OK");
     } else res.send("Incorrect query");
 });
 
-app.listen(configs.port + 1, () => console.log("Session Saver API initiated at port " + (configs.port + 1)));
+app.listen(configs.port + 1, () => logger("info", "Session Saver API initiated at port " + (configs.port + 1)));
