@@ -1,5 +1,5 @@
 # zombs-session-saver
-Multi-threaded Session Saver for the game zombs.io with APIs availble. <br>
+Multi-threaded Session Saver for the game zombs.io with APIs available. <br>
 **A work in progress!** 
 - Client now integrated into [Sun:Raise](https://greasyfork.org/en/scripts/467381-sun-raise-zombs-io)!
 - A client script for testing is available now! More polished and customized client script is coming down the road.
